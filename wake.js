@@ -12,16 +12,21 @@ $(document).ready(function(){
 window.onload = function() {
 	var ins = document.getElementById("instructions");
 	ins.onclick = function() {
-		out("<br \ >This is a text-based adventure game, also known to some as <b>Interactive Fiction</b>.  \
+		out(instructions());
+		return false;
+	}
+};
+
+function instructions() {
+	return "<br \ >This is a text-based adventure game, also known to some as <b>Interactive Fiction</b>.  \
 	After reading the prompt, you type your responces into the field below.  It will not understand all sentances \
 	or phrases, but it works best with sentences in the form of 'verb noun', such as 'look room' or \
 	'get cup'.  You can navigate without a verb by typing the directions you wish to go, such as 'north', 'south', \
 	'east', and 'west'.  You can also use the shortcuts, 'n', 's', 'e', and 'w', for each of the cardinal directions \
-	respectively.");
-		window.scrollBy(0, 200);
-		return false;
-	}
-};
+	respectively.  \
+	<br \>You can view these instructions again by typing 'help'.";
+	window.scrollBy(0, 200);
+}
 
 var player = {
 	name: "player",
@@ -193,6 +198,9 @@ function checkGo(exitName) {
 
 function command(input) {
 	switch(input) {
+		case "help":
+			return instructions();
+			break;
 		case "l":
 		case "look":
 			return updateRoomInfo();

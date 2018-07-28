@@ -6,16 +6,17 @@ I have built a simple browser terminal emulator for displaying a text-based game
 So far a player can move around with commands like "n" or "north", and can review the room description with the "look" or "l" command.
 <p>
 Todo:<br />
--make more object-oriented? (would reduce repeated code)<br />
--out() should create new elements instead of appending, or eliminate the oldest lines after a threshold<br />
--tokenize and parse multi-word commands<br />
+-return focus to prompt after clicking instructions?
+-make more object-oriented? (would reduce repeated code and allow for default settings)<br />
+-ensure font is displaying correctly on other machines(works locally, but not when hosted)
+-import/export map data to a json file to separate game data, manage saving, and swap games.<br />
+-tokenize to parse multi-word commands<br />
 -"look at x" should return description of x<br />
 -inventory, get and drop commands<br />
 -doors, locks, keys.<br />
 -interactables (considering calling these machines; they are items with states and/or behaviors, e.g. lightswitch.)<br />
 -review formatting of room info output<br />
 -simplify code (a lot of unnecessary abstraction.  consolidate similar functions or break up into smaller?)<br />
--import/export map data to a json file to separate game data, manage saving, and swap games.<br />
 -tutorial/help command<br />
  <br />
 Commands so far:<br />
@@ -33,3 +34,10 @@ reset<br />
 
 Future commands:<br />
 look at, get, take, drop, go, use, inv/inventory/i, 
+
+Updates:
+-created CSS theme
+-instructions link
+
+-help command displays instructions
+-
