@@ -11,20 +11,23 @@ $(document).ready(function(){
 var player = {
 	name: "player",
 	description: "lookin' good!",
-	currentRoom: 3,
+	currentRoom: 1,
 	inventory: []
 };
 
 //to be implemented later;
 function reset() {
 	//var map = x; //reset map
-	player.currentRoom = map.room[1];
+	//return to first room
+	 updateCurrentRoom(1);
+	//refresh text
+	document.getElementById("gameText").innerHTML = "<br \>" + map.description + "<br \>";
 }
 
 //map is an object that holds name, description, and an array of rooms and their data
 var map = {
 	//name: title of game (include author optionally?)
-	name: "default game",
+	name: "Default Game",
 	//description: opening text for the game
 	description: "This is the opening text",
 	room: [
@@ -137,7 +140,6 @@ function enter() {
 	var input = $('#userInput').val().toLowerCase();
 	out("&nbsp &nbsp &nbsp &nbsp" + input);
 	out(command(input));
-	//updateRoomInfo();
 	//clear previous input
 	document.getElementById("userInput").value = ""; //save this as a constant instead of searching repeatedly?
 	window.scrollBy(0, 200);
@@ -196,14 +198,30 @@ function command(input) {
 		case "west":
 			return checkGo("west");
 			break;
+		case "reset":
+			reset();
+			return updateRoomInfo();
+			break;
 		default:
 			return "I'm not sure what you mean.";
 	}
 }
 
+function checkScreen() {
+	if (document.documentElement.clientWidth < screen.width) {
+		document.getElementById("div").style.width = "auto";
+	} else {
+		document.getElementById("div").style.width = "50%";
+	}
+};
+
 function start() {
+	var screenWidth = screen.width;
 	document.getElementById("title").innerHTML = "\"" + map.name + "\"<br \><br \>";
 	out(map.description + "<br \>");
 	out(updateRoomInfo());
+	//document.getElementById("userInput").size = 3 / screenWidth;
+	//document.getElementById("div").size = (screenWidth)/2;
 }
+checkScreen();
 start();

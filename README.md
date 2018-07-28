@@ -29,6 +29,7 @@ e
 east
 w
 west
+reset
 
 Future commands:
 look at, get, take, drop, go, use, inv/inventory/i, 
