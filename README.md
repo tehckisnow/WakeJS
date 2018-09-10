@@ -6,6 +6,21 @@ I have built a simple browser terminal emulator for displaying a text-based game
 So far a player can move around with commands like "n" or "north", and can review the room description with the "look" or "l" command.
 <p>
 Todo:<br />
+-output returns undefined if searching for an item that is not in the current room()
+-dropping wrong items
+
+"You can see rock here. There are exits to the south.
+       > drop coin
+dropped 
+       > i
+beef
+       > l
+[first room]:
+This is the first room.
+You can see rock corn here. There are exits to the south."
+
+
+-up arrow command history
 -return focus to prompt after clicking instructions?
 -make more object-oriented? (would reduce repeated code and allow for default settings)<br />
 -ensure font is displaying correctly on other machines(works locally, but not when hosted)
@@ -18,6 +33,9 @@ Todo:<br />
 -review formatting of room info output<br />
 -simplify code (a lot of unnecessary abstraction.  consolidate similar functions or break up into smaller?)<br />
 -tutorial/help command<br />
+-save<br />
+-background image with scanlines<br />
+-bootup animation<br />
  <br />
 Commands so far:<br />
 l<br />
@@ -36,6 +54,12 @@ Future commands:<br />
 look at, get, take, drop, go, use, inv/inventory/i, 
 
 Updates:
+
+sep 9, 2018-
+-inventory; get and drop; still need to fix issue
+-tokenized input; split user input into an array and save only recognized commands into array
+
+older-
 -created CSS theme
 -instructions link
 

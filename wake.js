@@ -32,7 +32,7 @@ var player = {
 	name: "player",
 	description: "lookin' good!",
 	currentRoom: 1,
-	inventory: []
+	inventory: [{name: "corn"}, {name: "beef"}]
 };
 
 //to be implemented later;
@@ -123,6 +123,7 @@ function out(text) {
 }//out()
 
 //return a list of names seperated by spaces from the array passed in
+//horizontal, for things like listItems() and listExits().
 function listNames(array) {
 	var elementsList = "";
 	x = 0;
@@ -137,23 +138,24 @@ function listNames(array) {
 }//listNames()
 
 //return a list of the names of items in the current room if there are any
-function checkItems() {
+function listItems() {
 	if (thisRoom.items.length > 0) {
 		return "You can see <b>" + listNames(thisRoom.items) + "</b> here. ";//space at end is intentional
 	}
 	return "";
-}checkItems()
+}//listItems()
+
 //return a list of names of exits in the current room if there are any
-function checkExits() {
+function listExits() {
 	if (thisRoom.exits.length > 0) {
 		return "There are exits to the <b>" + listNames(thisRoom.exits) + "</b>.";
 	}
 	return "";
-}//checkExits()
+}//listExits()
 
 function returnRoomName() {
 	return "<br \><b>[" + thisRoom.name + "]:</b>";
-}
+};
 
 //takes input, converts to lowercase, passes to command interpreter, updates room info
 function enter() {
@@ -163,7 +165,7 @@ function enter() {
 	//clear previous input
 	document.getElementById("userInput").value = ""; //save this as a constant instead of searching repeatedly?
 	window.scrollBy(0, 200);
-}
+};
 
 //which array element contains an object with the given parameter(q)? return -1 if not found
 function searchName(datArray, q) {
@@ -174,17 +176,17 @@ function searchName(datArray, q) {
 		}
 	});
 	return found;
-}
+};
 
 //pass a number and update the current room number
 function updateCurrentRoom(newRoom) {
 	player.currentRoom = newRoom;
 	thisRoom = map.room[player.currentRoom];
-}
+};
 
 function updateRoomInfo() {
-	return returnRoomName() + "<br \>" + thisRoom.description + "<br \>" + checkItems() + checkExits();
-}
+	return returnRoomName() + "<br \>" + thisRoom.description + "<br \>" + listItems() + listExits();
+};
 
 function checkGo(exitName) {
 	var potentialRoom = searchName(thisRoom.exits, exitName);
@@ -194,10 +196,60 @@ function checkGo(exitName) {
 	} else {
 		return "There does not seem to be an exit there.";
 	}
+};
+
+//split user input into an array and save only recognized commands into array
+function tokenize(originalInput) {
+	var commandsList = ["help", "l", "look", "n", "north", "s", "south", "e", "east", "w", "west", "inventory", "inv", "i", "get", "drop", "reset"];
+	//split into array
+	var tokenizedInput = originalInput.split(" ");
+	//loop through array and only save recognized commands to finalizedCommand[finalCommandIndex]
+	var finalizedCommand = [];
+	var finalCommandIndex = 0;
+	
+	var i = 0;
+	while (i < tokenizedInput.length) {
+		//check commandsList
+		var y = 0;
+		while (y < commandsList.length) {
+			if (tokenizedInput[i] == commandsList[y]) {
+				finalizedCommand[finalCommandIndex] = tokenizedInput[i];
+				finalCommandIndex++;
+				break;
+			}
+			y++;
+		}
+		//check inventory
+		y = 0;
+		while (y < player.inventory.length) {
+			if (tokenizedInput[i] == player.inventory[y]) {
+				finalizedCommand[finalCommandIndex] = tokenizedInput[i];
+				finalCommandIndex++;
+				break;
+			}
+			y++;
+		}
+		//check currentRoom.items
+		y = 0;
+		while (y < thisRoom.items.length) {
+			if (tokenizedInput[i] == thisRoom.items[y].name) {
+				finalizedCommand[finalCommandIndex] = tokenizedInput[i];
+				finalCommandIndex++;
+				break;
+			}
+			y++;
+		}
+		
+		i++;
+	}
+	return finalizedCommand;
 }
 
 function command(input) {
-	switch(input) {
+	var tokens = tokenize(input);
+	
+	//for now, this checks for main command in tokens[0]; later convert to check if contains
+	switch(tokens[0]) {
 		case "help":
 			return instructions();
 			break;
@@ -221,6 +273,24 @@ function command(input) {
 		case "west":
 			return checkGo("west");
 			break;
+		case "inventory":
+		case "inv":
+		case "i":
+			if (player.inventory.length > 0) {
+			return vertList(player.inventory);
+			break;
+			} else {
+				return "You do not seem to be carrying anything.";
+			}
+			break;
+		case "get":
+			//CHANGE THIS!!!!!!!!!!!!!!!!!!!!!!!!
+			return getItem(tokens[1]);
+			break;
+		case "drop":
+			//CHANGE THIS!!!!!!!!!!!!!!!!!!!!!!!!
+			return dropItem(tokens[1]);
+			break;
 		case "reset":
 			reset();
 			return updateRoomInfo();
@@ -228,7 +298,62 @@ function command(input) {
 		default:
 			return "I'm not sure what you mean.";
 	}
+};
+
+// add incrementer!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+function getItem(item) {
+	//if item is in current room
+	var i = 0;
+	while (i < thisRoom.items.length) {
+		if (thisRoom.items[i].name == item) {
+			//add to inventory
+			player.inventory[player.inventory.length] = thisRoom.items[i];
+			//get index
+			var toRemove = thisRoom.items.indexOf(thisRoom.items[i]);
+			//remove from room
+			thisRoom.items.splice(toRemove, 1);
+			return "got " + item;
+		} else {
+			return "You don't see that here";
+		}
+	}
+};
+
+function dropItem(item) {
+	//if item is in inventory
+	var i = 0;
+	while (i < player.inventory.length) {
+		if (player.inventory[i][name] == item) {
+			//add to current room
+			thisRoom.items[thisRoom.items.length] = player.inventory[i];
+			//remove from inv
+			player.inventory.splice(i, 1);
+			return "dropped ";
+		}
+		i++;
+	}
+	return "You don't seem to have one of those.";
 }
+
+//delete this function
+function checkContains(location, query){
+	var i = 0;
+	while (i < location.length) {
+		if (location[i].name == query) {
+			return true;
+		}
+	}
+	return false;
+};
+
+//use to create a vertical list (like in inventory)
+function vertList(array) {
+	var result = "";
+	for (x = 0; x < array.length; x++) {
+		result += array[x].name + "<br \>";
+	}
+	return result;
+};
 
 function checkScreen() {
 	if (document.documentElement.clientWidth < screen.width) {
@@ -245,6 +370,6 @@ function start() {
 	out(updateRoomInfo());
 	//document.getElementById("userInput").size = 3 / screenWidth;
 	//document.getElementById("div").size = (screenWidth)/2;
-}
+};
 checkScreen();
 start();
