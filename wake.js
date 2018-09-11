@@ -200,7 +200,7 @@ function checkGo(exitName) {
 
 //split user input into an array and save only recognized commands into array
 function tokenize(originalInput) {
-	var commandsList = ["help", "l", "look", "n", "north", "s", "south", "e", "east", "w", "west", "inventory", "inv", "i", "get", "drop", "reset"];
+	var commandsList = ["help", "l", "look", "n", "north", "s", "south", "e", "east", "w", "west", "inventory", "inv", "i", "g", "get", "d", "drop", "test", "reset"];
 	//split into array
 	var tokenizedInput = originalInput.split(" ");
 	//loop through array and only save recognized commands to finalizedCommand[finalCommandIndex]
@@ -210,38 +210,43 @@ function tokenize(originalInput) {
 	var i = 0;
 	while (i < tokenizedInput.length) {
 		//check commandsList
-		var y = 0;
-		while (y < commandsList.length) {
-			if (tokenizedInput[i] == commandsList[y]) {
-				finalizedCommand[finalCommandIndex] = tokenizedInput[i];
-				finalCommandIndex++;
-				break;
+		if (tokenizedInput[i] !== undefined) {
+			var y = 0;
+			while (y < commandsList.length) {
+				if (tokenizedInput[i] == commandsList[y]) {
+					finalizedCommand[finalCommandIndex] = tokenizedInput[i];
+					finalCommandIndex++;
+					break;
+				}
+				y++;
 			}
-			y++;
-		}
-		//check inventory
-		y = 0;
-		while (y < player.inventory.length) {
-			if (tokenizedInput[i] == player.inventory[y]) {
-				finalizedCommand[finalCommandIndex] = tokenizedInput[i];
-				finalCommandIndex++;
-				break;
+			//check inventory
+			y = 0;
+			while (y < player.inventory.length) {
+				if (tokenizedInput[i] == player.inventory[y].name) {
+					finalizedCommand[finalCommandIndex] = tokenizedInput[i];
+					finalCommandIndex++;
+					break;
+				}
+				y++;
 			}
-			y++;
-		}
-		//check currentRoom.items
-		y = 0;
-		while (y < thisRoom.items.length) {
-			if (tokenizedInput[i] == thisRoom.items[y].name) {
-				finalizedCommand[finalCommandIndex] = tokenizedInput[i];
-				finalCommandIndex++;
-				break;
+			//check currentRoom.items
+			y = 0;
+			while (y < thisRoom.items.length) {
+				if (tokenizedInput[i] == thisRoom.items[y].name) {
+					finalizedCommand[finalCommandIndex] = tokenizedInput[i];
+					finalCommandIndex++;
+					break;
+				}
+				y++;
 			}
-			y++;
+			
+			i++;
 		}
-		
-		i++;
 	}
+	
+	//remove this after debugging!!!
+	out("!tokenized command: " + finalizedCommand);
 	return finalizedCommand;
 }
 
@@ -283,10 +288,12 @@ function command(input) {
 				return "You do not seem to be carrying anything.";
 			}
 			break;
+		case "g":
 		case "get":
 			//CHANGE THIS!!!!!!!!!!!!!!!!!!!!!!!!
 			return getItem(tokens[1]);
 			break;
+		case "d":
 		case "drop":
 			//CHANGE THIS!!!!!!!!!!!!!!!!!!!!!!!!
 			return dropItem(tokens[1]);
@@ -295,10 +302,22 @@ function command(input) {
 			reset();
 			return updateRoomInfo();
 			break;
+		case "test":
+			return testSearchArray();
+			break;
 		default:
 			return "I'm not sure what you mean.";
 	}
 };
+
+function searchArray(param, value) {
+	return param.value;
+}
+
+function test() {
+	var a = thisRoom.items.find(searchArray(name, "rock"));
+	out(a);
+}
 
 // add incrementer!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 function getItem(item) {
@@ -308,10 +327,8 @@ function getItem(item) {
 		if (thisRoom.items[i].name == item) {
 			//add to inventory
 			player.inventory[player.inventory.length] = thisRoom.items[i];
-			//get index
-			var toRemove = thisRoom.items.indexOf(thisRoom.items[i]);
 			//remove from room
-			thisRoom.items.splice(toRemove, 1);
+			thisRoom.items.splice(i, 1);
 			return "got " + item;
 		} else {
 			return "You don't see that here";
@@ -320,10 +337,14 @@ function getItem(item) {
 };
 
 function dropItem(item) {
+	if (item == undefined) {
+		return "Drop what?";
+	}
 	//if item is in inventory
 	var i = 0;
 	while (i < player.inventory.length) {
-		if (player.inventory[i][name] == item) {
+		
+		if (player.inventory[i].name == item) { //this is always returning true!
 			//add to current room
 			thisRoom.items[thisRoom.items.length] = player.inventory[i];
 			//remove from inv
@@ -335,7 +356,7 @@ function dropItem(item) {
 	return "You don't seem to have one of those.";
 }
 
-//delete this function
+//delete this function (or rewrite?)
 function checkContains(location, query){
 	var i = 0;
 	while (i < location.length) {
