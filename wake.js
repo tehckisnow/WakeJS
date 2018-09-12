@@ -17,6 +17,8 @@ window.onload = function() {
 	}
 };
 
+var debugMode = false;
+
 function instructions() {
 	return "<br \ >This is a text-based adventure game, also known to some as <b>Interactive Fiction</b>.  \
 	After reading the prompt, you type your responces into the field below.  It will not understand all sentances \
@@ -44,82 +46,13 @@ function reset() {
 	document.getElementById("gameText").innerHTML = "<br \>" + map.description + "<br \>";
 }
 
-//map is an object that holds name, description, and an array of rooms and their data
-var map = {
-	//name: title of game (include author optionally?)
-	name: "Default Game",
-	//description: opening text for the game
-	description: "This is the opening text",
-	room: [
-		{ //Room 0
-			name: "default room",
-			description: "This is a default room. If you see this, something has gone wrong.",
-			exits: [],
-			items: []
-		},
-		
-		{ //Room 1
-			name: "first room",
-			description: "This is the first room.",
-			exits: [
-				{
-				name: "south",
-				destination: 2
-				}
-			],
-			items: [
-				{
-				name: "rock",
-				description: "a small rock."
-				}
-			]
-		},
-		
-		{ //Room 2
-			name: "second room", 
-			description: "This is the second room.",
-			exits: [
-				{
-				name: "north",
-				destination: 1
-				},
-				{
-				name: "south",
-				destination: 3
-				}
-			],
-			items: []
-		},
-		
-		{ //Room 3
-			name: "third room",
-			description: "This is the third room.",
-			exits: [
-				{
-				name: "north",
-				destination: 2
-				}
-			],
-			items: [
-				{
-				name: "key",
-				description: "a small silver key."
-				},
-				{
-				name: "pen",
-				description: "a small silver writing pen."
-				}
-			]
-		} //Room 3
-		
-	] //room list
-} //map
 
 var thisRoom = map.room[player.currentRoom]; //this will change
 
 //change output method here (console.log / innerHTML, ect.)
 function out(text) {
 	document.getElementById("gameText").innerHTML += "<br \>" + text;
+	document.getElementById("userInput").focus();
 }//out()
 
 //return a list of names seperated by spaces from the array passed in
@@ -188,19 +121,59 @@ function updateRoomInfo() {
 	return returnRoomName() + "<br \>" + thisRoom.description + "<br \>" + listItems() + listExits();
 };
 
+function query(iterable, propertyX, valueOfX, propertyY) {			 
+	for (let x of iterable) {		
+		if (x[propertyX] == valueOfX) {
+			return x[propertyY];
+		} 
+	}
+};
+
+//experimental
+function checkGo(exitName) {
+	if (query(thisRoom.exits, "name", exitName, "name")) {
+		var locked = query(thisRoom.exits, "name", exitName, "locked");
+		if (!locked || locked === undefined) {
+			//update currentRoom
+			var num = query(thisRoom.exits, "name", exitName, "destination");
+			updateCurrentRoom(num);
+			return "You travel " + exitName + ".<br \>" + updateRoomInfo();
+		} else {
+			return "This door appears to be locked.";
+		}
+	} else {
+		return "There does not seem to be an exit there.";
+	}
+};
+
+//REMOVE THIS
+/* //replaced with version that uses query()
 function checkGo(exitName) {
 	var potentialRoom = searchName(thisRoom.exits, exitName);
 	if (!(potentialRoom === -1)) {
+		
+		//check if locked
+		out(thisRoom.exits[exitName]);//returns undefined
+		
+		var lockCheck = thisRoom.exits[exitName];
+		
+		if (thisRoom.exits[exitName]) {
+			return "This door appears to be locked.";
+		} else {
+			return "whoops!";
+		}
+		
 		updateCurrentRoom(potentialRoom);
 		return "You travel " + exitName + "." + "<br \>" + updateRoomInfo();
 	} else {
 		return "There does not seem to be an exit there.";
 	}
 };
+*/
 
 //split user input into an array and save only recognized commands into array
 function tokenize(originalInput) {
-	var commandsList = ["help", "l", "look", "n", "north", "s", "south", "e", "east", "w", "west", "inventory", "inv", "i", "g", "get", "d", "drop", "test", "reset"];
+	var commandsList = ["help", "l", "look", "n", "north", "s", "south", "e", "east", "w", "west", "inventory", "inv", "i", "g", "get", "d", "drop", "test", "reset", "debug", "tp"];
 	//split into array
 	var tokenizedInput = originalInput.split(" ");
 	//loop through array and only save recognized commands to finalizedCommand[finalCommandIndex]
@@ -246,7 +219,9 @@ function tokenize(originalInput) {
 	}
 	
 	//remove this after debugging!!!
-	out("!tokenized command: " + finalizedCommand);
+	if (debugMode == true) {
+		out("!tokenized command: " + finalizedCommand);
+	}
 	return finalizedCommand;
 }
 
@@ -303,21 +278,28 @@ function command(input) {
 			return updateRoomInfo();
 			break;
 		case "test":
-			return testSearchArray();
+			//insert test commands here;
+			return;
+			break;
+		case "debug":
+			if (debugMode == false) {
+				debugMode = true;
+				return "Debug mode activated.";
+			} else if (debugMode == true) {
+				debugMode = false;
+				return "Debug mode deactivated.";
+			}
+			break;
+		case "tp":
+			if (debugMode) {
+				updateCurrentRoom(tokens[1]);
+				return "teleported to room " + tokens[1];
+			}
 			break;
 		default:
 			return "I'm not sure what you mean.";
 	}
 };
-
-function searchArray(param, value) {
-	return param.value;
-}
-
-function test() {
-	var a = thisRoom.items.find(searchArray(name, "rock"));
-	out(a);
-}
 
 // add incrementer!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 function getItem(item) {
