@@ -18,6 +18,7 @@ window.onload = function() {
 };
 
 var debugMode = false;
+var helpCounter = 0;
 
 function instructions() {
 	return "<br \ >This is a text-based adventure game, also known to some as <b>Interactive Fiction</b>.  \
@@ -34,7 +35,7 @@ var player = {
 	name: "player",
 	description: "lookin' good!",
 	currentRoom: 1,
-	inventory: [{name: "corn"}, {name: "beef"}]
+	inventory: [{name: "corn", description: "a piece of corn"}, {name: "beef", description: "a piece of beef"}]
 };
 
 //to be implemented later;
@@ -46,8 +47,9 @@ function reset() {
 	document.getElementById("gameText").innerHTML = "<br \>" + map.description + "<br \>";
 }
 
-
-var thisRoom = map.room[player.currentRoom]; //this will change
+//this should not be a global; 
+//also; consider using const for thisRoom.
+var thisRoom = map.room[player.currentRoom];
 
 //change output method here (console.log / innerHTML, ect.)
 function out(text) {
@@ -100,17 +102,6 @@ function enter() {
 	window.scrollBy(0, 200);
 };
 
-//which array element contains an object with the given parameter(q)? return -1 if not found
-function searchName(datArray, q) {
-	var found = -1;
-	datArray.forEach(function(element) {
-		if (element.name === q) {
-			found = element.destination;
-		}
-	});
-	return found;
-};
-
 //pass a number and update the current room number
 function updateCurrentRoom(newRoom) {
 	player.currentRoom = newRoom;
@@ -118,10 +109,20 @@ function updateCurrentRoom(newRoom) {
 };
 
 function updateRoomInfo() {
-	return returnRoomName() + "<br \>" + thisRoom.description + "<br \>" + listItems() + listExits();
+	return returnRoomName() + "<br \>" + thisRoom.briefDesc + "<br \>" + listItems() + listExits();
 };
 
+//search an iterable (array) for an object with valueOfX: propertyX and return propertyY
+//if propertyY is left out, returns the object found, or -1 if not.
 function query(iterable, propertyX, valueOfX, propertyY) {			 
+	if (propertyY === undefined) {
+		for (let x of iterable) {		
+			if (x[propertyX] == valueOfX) {
+				return x;
+			} 
+		}
+		return -1;
+	}
 	for (let x of iterable) {		
 		if (x[propertyX] == valueOfX) {
 			return x[propertyY];
@@ -146,34 +147,9 @@ function checkGo(exitName) {
 	}
 };
 
-//REMOVE THIS
-/* //replaced with version that uses query()
-function checkGo(exitName) {
-	var potentialRoom = searchName(thisRoom.exits, exitName);
-	if (!(potentialRoom === -1)) {
-		
-		//check if locked
-		out(thisRoom.exits[exitName]);//returns undefined
-		
-		var lockCheck = thisRoom.exits[exitName];
-		
-		if (thisRoom.exits[exitName]) {
-			return "This door appears to be locked.";
-		} else {
-			return "whoops!";
-		}
-		
-		updateCurrentRoom(potentialRoom);
-		return "You travel " + exitName + "." + "<br \>" + updateRoomInfo();
-	} else {
-		return "There does not seem to be an exit there.";
-	}
-};
-*/
-
 //split user input into an array and save only recognized commands into array
 function tokenize(originalInput) {
-	var commandsList = ["help", "l", "look", "n", "north", "s", "south", "e", "east", "w", "west", "inventory", "inv", "i", "g", "get", "d", "drop", "test", "reset", "debug", "tp"];
+	var commandsList = ["help", "l", "look", "n", "north", "s", "south", "e", "east", "w", "west", "inventory", "inv", "i", "g", "get", "take", "d", "drop", "test", "reset", "debug", "tp", "me", "self", "room", "unlock", "list"];
 	//split into array
 	var tokenizedInput = originalInput.split(" ");
 	//loop through array and only save recognized commands to finalizedCommand[finalCommandIndex]
@@ -214,15 +190,33 @@ function tokenize(originalInput) {
 				y++;
 			}
 			
+			
+			//accept numbers
+			if (isNumeric(tokenizedInput[i])) {
+				finalizedCommand[finalCommandIndex] = Number(tokenizedInput[i]);
+				finalCommandIndex++;
+			}
+			
 			i++;
 		}
+		//i++;
 	}
+
+//regex check if value can be a valid number	
+function isNumeric(value) {
+    return /^-{0,1}\d+$/.test(value);
+}
 	
 	//remove this after debugging!!!
 	if (debugMode == true) {
 		out("!tokenized command: " + finalizedCommand);
 	}
 	return finalizedCommand;
+}
+
+//add master list of commands here
+function list() {
+	return "Available commands are: <br /> ...";
 }
 
 function command(input) {
@@ -233,9 +227,12 @@ function command(input) {
 		case "help":
 			return instructions();
 			break;
+		case "list":
+			return list();
+			break;
 		case "l":
 		case "look":
-			return updateRoomInfo();
+			return look(tokens[1]);
 			break;
 		case "n":
 		case "north":
@@ -265,13 +262,15 @@ function command(input) {
 			break;
 		case "g":
 		case "get":
-			//CHANGE THIS!!!!!!!!!!!!!!!!!!!!!!!!
+		case "take":
 			return getItem(tokens[1]);
 			break;
 		case "d":
 		case "drop":
-			//CHANGE THIS!!!!!!!!!!!!!!!!!!!!!!!!
 			return dropItem(tokens[1]);
+			break;
+		case "unlock":
+			return unlock(tokens[1]);
 			break;
 		case "reset":
 			reset();
@@ -292,32 +291,78 @@ function command(input) {
 			break;
 		case "tp":
 			if (debugMode) {
-				updateCurrentRoom(tokens[1]);
+				updateCurrentRoom(Number(tokens[1]));
 				return "teleported to room " + tokens[1];
 			}
 			break;
 		default:
-			return "I'm not sure what you mean.";
+			if (helpCounter < 2) {
+				helpCounter++;
+				return "I'm not sure what you mean.";
+			} else {
+				helpCounter = 0;
+				return "You can get help by typing \"help\" into the prompt below.";
+			}
 	}
 };
 
+function unlock(target){
+		if (query(thisRoom.exits, "name", target, "locked")) {
+			var unlockedBy = query(thisRoom.exits, "name", target, "keyID");
+			var itemID = query(player.inventory, "id", unlockedBy);
+			if (itemID.id == unlockedBy) {
+				query(thisRoom.exits, "name", target).locked = false;
+				//check item.retain, if true:
+				dropItem(itemID.name);
+				return "Unlocked.";
+			}	
+			return "You don't appear to be holding the key.";
+		}
+		else {
+			return "Unlock what?";
+		}	
+}
+
+function look(target) {
+	//if used alone, resend room info. (change this later to return longDesc)
+	if (target === undefined || target === "room") {
+		return thisRoom.description + "<br \>" + listItems() + listExits();
+	} else if (target === "self" || target === "me"){
+		return player.description;
+	} else {
+		//first check inventory
+		if (query(player.inventory, "name", target, "name")) {
+			return query(player.inventory, "name", target, "description");
+		}
+		//then check room
+		else if (query(thisRoom.items, "name", target, "name")) {
+			return query(thisRoom.items, "name", target, "description");
+		}
+	
+	}
+}
+
 // add incrementer!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 function getItem(item) {
+	if (item == undefined) {
+		return "Get what?";
+	}
 	//if item is in current room
 	var i = 0;
 	while (i < thisRoom.items.length) {
-		if (thisRoom.items[i].name == item) {
+		if (thisRoom.items[i] && thisRoom.items[i].name == item) {
 			//add to inventory
 			player.inventory[player.inventory.length] = thisRoom.items[i];
 			//remove from room
-			thisRoom.items.splice(i, 1);
-			return "got " + item;
+			thisRoom.items.splice(i, 1); //this works, but should it be splice(items[i], 1); ???
+			return "Got " + item + ".";
 		} else {
 			return "You don't see that here";
 		}
 	}
 };
 
+//consider refactoring to use if(item == undefined && player.inventory[i].name == item) like getItem()
 function dropItem(item) {
 	if (item == undefined) {
 		return "Drop what?";
@@ -326,16 +371,18 @@ function dropItem(item) {
 	var i = 0;
 	while (i < player.inventory.length) {
 		
-		if (player.inventory[i].name == item) { //this is always returning true!
+		if (player.inventory[i].name == item) {
 			//add to current room
 			thisRoom.items[thisRoom.items.length] = player.inventory[i];
 			//remove from inv
 			player.inventory.splice(i, 1);
-			return "dropped ";
+			return "Dropped " + item + ".";
 		}
 		i++;
 	}
-	return "You don't seem to have one of those.";
+	return "You don't seem to be carrying one of those.";
+	//the above command will only be triggered if the player attempts to drop something
+	//that is already in the current room.  consider replacing if(item == undefined) above?
 }
 
 //delete this function (or rewrite?)

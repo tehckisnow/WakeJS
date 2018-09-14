@@ -6,7 +6,12 @@ I have built a simple browser terminal emulator for displaying a text-based game
 So far a player can move around with commands like "n" or "north", and can review the room description with the "look" or "l" command.
 <p>
 Todo:<br />
--help should mentions "list" command which will list available commands
+-can't pick up pen before key?<br />
+-check item.retain before dropping a key<br />
+-key disappears when used instead of being dropped in current room.<br />
+-typos with get (like "get cion") return the room description as if target was not there.
+-get ALL command<br />
+-help should mention "list" command which will list available commands
 -fix get/drop system(it is acting strangely sometimes, not sure about the problem yet)
 -up arrow command history<br />
 -fix tp debug command (parser does not recognize numbers because they are not in approved keywords list)<br />
@@ -27,6 +32,14 @@ Todo:<br />
 -if command is not found in engine, check game's json "customCommands" (this would force using eval() and pose security problems)<br />
 -organize items in their own global array and sort by itemID? (likely make sorting, finding, and managing inventory easier, may make map less readable)<br />
 -command checker checks all exit names in map? (that's probably unecessary, maybe stratify exits to a master list, like with items)<br />
+-seperate responces ("There doesn't seem to be an exit there.") into a master response list so they can be customized for a given game
+-remove jQuery dependance<br />
+-move instructions(?) and player object to map file(so they can vary depending on game)<br />
+-improve onResize
+-look east
+-upon entering a room, check it's visited property and set to true if undefined.  use description for the first time entering a room and briefDesc for each time after<br />
+-destroyItem();
+
 
  <br />
 Commands so far:<br />
@@ -47,11 +60,20 @@ inventory<br />
 inv<br />
 g<br />
 get<br />
+take<br />
 d<br />
 drop<br />
 test<br />
 debug<br />
 tp<br />
+
+recognized action targets:<br />
+items in inventory<br />
+items in current room<br />
+me<br />
+self<br />
+room<br />
+numbers (for tp)<br />
 	
 
 Future commands:<br />
@@ -59,10 +81,26 @@ look at, get, take, drop, go, use, inv/inventory/i,
 
 Updates:
 
+sep 13, 2018
+-tokenize() will now accept numbers.  this allows tp command to work.
+-fixed inventory(I think?) 
+-the while loop in getItem() does not have an incrementor.  Why does this seem to work correctly!?!?
+-implemented look at(actually just an extension of look).  if there is a look target, it first checks inventory, then room and returns description.
+-added me, self, room, list, and take.
+-helpCounter reminds player of help command every third invalid input.
+-added unlock, which checks inventory for a keyID and changes locked status of door.
+-added itemlist and exitlist to look at room results
+-added briefDesc, which is used in room updates, while description is used for look()
+
+sep 12, 2018
+-added query()
+-replaced checkGo() with version that uses query()
+
 sep 11, 2018
 -added debug toggle
 -return focus to prompt after "instructions" is clicked (by means of out().)
 -exits can now be locked
+-seperated map into seperate script file
 
 sep 9, 2018-
 -inventory; get and drop; still need to fix issue

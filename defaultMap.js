@@ -7,6 +7,7 @@ var map = {
 	room: [
 		{ //Room 0
 			name: "default room",
+			briefDesc: "This is a default room.",
 			description: "This is a default room. If you see this, something has gone wrong.",
 			exits: [],
 			items: []
@@ -14,6 +15,7 @@ var map = {
 		
 		{ //Room 1
 			name: "first room",
+			briefDesc: "This is a default room.",
 			description: "This is the first room.",
 			exits: [
 				{
@@ -31,6 +33,7 @@ var map = {
 		
 		{ //Room 2
 			name: "second room", 
+			briefDesc: "This is a default room.",
 			description: "This is the second room.",
 			exits: [
 				{
@@ -47,6 +50,7 @@ var map = {
 		
 		{ //Room 3
 			name: "third room",
+			briefDesc: "This is a default room.",
 			description: "This is the third room.",
 			exits: [
 				{
@@ -56,13 +60,16 @@ var map = {
 				{
 				name: "east",
 				destination: 4,
-				locked: true
+				locked: true,
+				keyID: 1203
 				}
 			],
 			items: [
 				{
 				name: "key",
-				description: "a small silver key."
+				description: "a small silver key.",
+				id: 1203,
+				retain: false //does the item remain in inv upon use?
 				},
 				{
 				name: "pen",
@@ -73,6 +80,7 @@ var map = {
 		
 		{//Room 4
 			name: "secret room",
+			briefDesc: "This is a default room.",
 			description: "Congratulations, you've found the secret room!",
 			exits: [
 				{
