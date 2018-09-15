@@ -1,12 +1,8 @@
-
-//wait for the rest of the page to load, then listen for keypress and if it is enter, send input to enter()
-$(document).ready(function(){
-	$(document).keypress(function(key){
-		if (key.which === 13 && $('#userInput').is(':focus')) {
-			enter();
-		}
-	})
-});
+function pressEnter(event) {
+	if (event.keyCode == 13) {
+		enter();
+	}
+}		
 
 //instructions link
 window.onload = function() {
@@ -27,7 +23,7 @@ function instructions() {
 	'get cup'.  You can navigate without a verb by typing the directions you wish to go, such as 'north', 'south', \
 	'east', and 'west'.  You can also use the shortcuts, 'n', 's', 'e', and 'w', for each of the cardinal directions \
 	respectively.  \
-	<br \>You can view these instructions again by typing 'help'.";
+	<br \>'list' will display a list of all basic commands. <br \>You can view these instructions again by typing 'help'.";
 	window.scrollBy(0, 200);
 }
 
@@ -94,7 +90,7 @@ function returnRoomName() {
 
 //takes input, converts to lowercase, passes to command interpreter, updates room info
 function enter() {
-	var input = $('#userInput').val().toLowerCase();
+	var input = document.getElementById("userInput").value.toLowerCase();
 	out("&nbsp &nbsp &nbsp &nbsp> " + input);
 	out(command(input));
 	//clear previous input
@@ -313,6 +309,10 @@ function unlock(target){
 			if (itemID.id == unlockedBy) {
 				query(thisRoom.exits, "name", target).locked = false;
 				//check item.retain, if true:
+				if (itemID.retain === true) {
+					return "Unlocked.";
+				}
+				//when destroy() is implemented, consider adding destroyOnUse check here
 				dropItem(itemID.name);
 				return "Unlocked.";
 			}	
@@ -342,7 +342,6 @@ function look(target) {
 	}
 }
 
-// add incrementer!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 function getItem(item) {
 	if (item == undefined) {
 		return "Get what?";
@@ -351,15 +350,20 @@ function getItem(item) {
 	var i = 0;
 	while (i < thisRoom.items.length) {
 		if (thisRoom.items[i] && thisRoom.items[i].name == item) {
+			//check if obtainable
+			if (thisRoom.items[i].obtainable == false) {
+				return "You can't pick that up.";
+			}
 			//add to inventory
 			player.inventory[player.inventory.length] = thisRoom.items[i];
 			//remove from room
 			thisRoom.items.splice(i, 1); //this works, but should it be splice(items[i], 1); ???
 			return "Got " + item + ".";
-		} else {
-			return "You don't see that here";
-		}
+		} 
+		i++;
 	}
+	return "You don't see that here";
+	
 };
 
 //consider refactoring to use if(item == undefined && player.inventory[i].name == item) like getItem()

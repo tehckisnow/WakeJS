@@ -26,7 +26,8 @@ var map = {
 			items: [
 				{
 				name: "rock",
-				description: "a small rock."
+				description: "a small rock.",
+				retain: true //does the item remain in inv upon use?
 				}
 			]
 		},
@@ -45,7 +46,11 @@ var map = {
 				destination: 3
 				}
 			],
-			items: []
+			items: [{
+				name: "fountain",
+				description: "a beautiful fountain covered in water.",
+				obtainable: false
+				}]
 		},
 		
 		{ //Room 3
@@ -68,8 +73,7 @@ var map = {
 				{
 				name: "key",
 				description: "a small silver key.",
-				id: 1203,
-				retain: false //does the item remain in inv upon use?
+				id: 1203
 				},
 				{
 				name: "pen",
