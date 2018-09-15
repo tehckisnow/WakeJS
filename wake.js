@@ -10,23 +10,24 @@ window.onload = function() {
 	ins.onclick = function() {
 		out(instructions);
 		return false;
-	}
+	};
 };
 
 var debugMode = false;
 var helpCounter = 0;
 var instructions = "<br \ >This is a text-based adventure game, also known to some as <b>Interactive Fiction</b>.  \
-	After reading the prompt, you type your responces into the field below.  It will not understand all sentances \
-	or phrases, but it works best with sentences in the form of 'verb noun', such as 'look room' or \
-	'get cup'.  You can navigate without a verb by typing the directions you wish to go, such as 'north', 'south', \
-	'east', and 'west'.  You can also use the shortcuts, 'n', 's', 'e', and 'w', for each of the cardinal directions \
-	respectively.  \
-	<br \>'list' will display a list of all basic commands. <br \>You can view these instructions again by typing 'help'.";
+	After reading the prompt, type your responces into the field below.  It will not understand all sentances \
+	or phrases, but it works best with sentences in the form of 'verb noun', such as <b>'go east'</b> or \
+	<b>'get cup'</b>.  <br \><br \>You can navigate without a verb by typing the name of the exit you wish to take, such as <b>'north'</b>, or <b>'east'</b>. \
+	These cardinal directions can also use the shortcuts, <b>'n', 's', 'e',</b> and <b>'w'</b>, respectively.  \
+	<ul><li><b>'look'</b> will give you additional description of an object, or a room if used by itself. <b>[look car], [look at the statue.]</b> </li> \
+	<li><b>'get'</b> and <b>'drop'</b> allow you to collect or discard items. <br \><b>&nbsp [get cup], [drop the microphone]</b> </li> \
+	<li><b>'list'</b> will display a list of all basic commands. </ul> <p>You can view these instructions again by typing <b>'help'</b>.";
 	
 //default starting values for player if none are found in gamefile:
 var player = {
 	name: "player",
-	description: "you look as you normally do.",
+	description: "You look as you normally do.",
 	currentRoom: 1,
 	inventory: []
 	};
@@ -47,6 +48,7 @@ var thisRoom = map.room[player.currentRoom];
 //change output method here (console.log / innerHTML, ect.)
 function out(text) {
 	document.getElementById("gameText").innerHTML += "<br \>" + text;
+	window.scrollBy(0, 200);
 	document.getElementById("userInput").focus();
 }//out()
 
@@ -92,7 +94,7 @@ function enter() {
 	out(command(input));
 	//clear previous input
 	document.getElementById("userInput").value = ""; //save this as a constant instead of searching repeatedly?
-	window.scrollBy(0, 200);
+	window.scrollBy(0, 200); //added this to out; remove from here?
 };
 
 //pass a number and update the current room number
@@ -141,7 +143,7 @@ function checkGo(exitName) {
 
 //split user input into an array and save only recognized commands into array
 function tokenize(originalInput) {
-	var commandsList = ["help", "l", "look", "examine", "n", "north", "s", "south", "e", "east", "w", "west", "inventory", "inv", "i", "g", "get", "take", "d", "drop", "test", "reset", "debug", "tp", "me", "self", "room", "unlock", "list", "all"];
+	var commandsList = ["help", "l", "look", "examine", "x", "n", "north", "s", "south", "e", "east", "w", "west", "inventory", "inv", "i", "g", "get", "take", "d", "drop", "test", "reset", "debug", "tp", "me", "self", "room", "unlock", "list", "all", "eat", "read"];
 	//split into array
 	var tokenizedInput = originalInput.split(" ");
 	//loop through array and only save recognized commands to finalizedCommand[finalCommandIndex]
@@ -208,7 +210,32 @@ function isNumeric(value) {
 
 //add master list of commands here
 function list() {
-	return "Available commands are: <br /> ...";
+	return "Available commands are: <br /> ... <ul> \
+	<li>help : display help/instructions</li> \
+	<li>list : display this message</li> \
+	<li>look, l, examine, x : display description of target, room if none</li> \
+	<li>north, n : travel north</li> \
+	<li>south, s : travel south</li> \
+	<li>east, e : travel east</li> \
+	<li>west, w : travel west</li> \
+	<li>inventory, inv, i : display inventory</li> \
+	<li>get, g, take : add item to inventory</li> \
+	<li>drop, d : remove item from inventory</li> \
+	<li>unlock : unlock target</li> \
+	<li>read : read message from target</li> \
+	<li>eat : eat item from inventory</li> \
+	<li>[targets]</li> \
+	<ul> \
+	<li>me : used as a target for the look command</li> \
+	<li>self : same as 'me'</li> \
+	<li>room : used as target for look command</li> \
+	<li>all : used as target for get and drop commands</li> \
+	</ul> <li>debug tools (only display in debug mode in release version!) </li><ul> \
+	<li>debug : toggle debug mode</li> \
+	<li>tp : teleport to target room# (only available in debug mode)</li> \
+	<li>test : run test function</li> \
+	<li>reset : resets game state(not yet implemented)</li> \
+	</ul>";
 }
 
 function command(input) {
@@ -225,6 +252,7 @@ function command(input) {
 		case "l":
 		case "look":
 		case "examine":
+		case "x":
 			return look(tokens[1]);
 			break;
 		case "n":
@@ -265,6 +293,18 @@ function command(input) {
 		case "unlock":
 			return unlock(tokens[1]);
 			break;
+		case "read":
+			return read(tokens[1]);
+			break;
+		case "eat":
+			if (query(player.inventory, "name", tokens[1]).edible === true) {
+				//dropItem(tokens[1]);
+				destroyItem(tokens[1]);
+				return "You voraciously consume the " + tokens[1] + ".";
+			} else {
+				return "I don't think you really want to do that.";
+			}
+			break;
 		case "reset":
 			reset();
 			return updateRoomInfo();
@@ -285,7 +325,7 @@ function command(input) {
 		case "tp":
 			if (debugMode) {
 				updateCurrentRoom(Number(tokens[1]));
-				return "teleported to room " + tokens[1];
+				return "Teleported to room " + tokens[1];
 			}
 			break;
 		default:
@@ -339,29 +379,37 @@ function look(target) {
 	}
 }
 
+function read(item) {
+	if (query(player.inventory, "name", item, "read") !== undefined) {
+		return query(player.inventory, "name", item, "read");
+	} 
+	return "You can't read that.";
+}
+
 function getItem(item) {
 	if (item == undefined) {
 		return "Get what?";
 	}
-	
+	//check for "all" target
 	if (item == "all") {
 		var got = "";
 		var i = 0;
-		while (i < thisRoom.items.length) {
+		while (i < thisRoom.items.length) { //<-- this is where 'get all' is failing
 			//check if obtainable
-			/*
-			if (thisRoom.items[i].obtainable == false) {
+			if (thisRoom.items[i].obtainable === false) {
 				i++;
+				out(i); //remove after debugging
 				continue;
-			}*/
-			//got += thisRoom.items[i][name] + " ";
-			getItem(thisRoom.items[i][name]);
 			}
-		return "got " + got;
+			//got += thisRoom.items[i][name] + " ";
+			//out("got " + i); //remove after debugging
+			//getItem(thisRoom.items[i][name]);
+			}
+		return "Got " + got;
 	}
 	
 	//if item is in current room
-	var i = 0;
+	i = 0;
 	while (i < thisRoom.items.length) {
 		if (thisRoom.items[i] && thisRoom.items[i].name == item) {
 			//check if obtainable
@@ -385,13 +433,17 @@ function dropItem(item) {
 	if (item == undefined) {
 		return "Drop what?";
 	}
+	//check for "all" target
 	if (item == "all") {
+		if (player.inventory.length < 1) {
+			return "You are not carrying anything.";
+		}
 		while (player.inventory.length > 0) {
 			dropItem(player.inventory[0].name);
 		}
-		return "dropped everything.";
+		return "Dropped everything.";
 	}
-	//if item is in inventory
+	//check if target is in inventory
 	var i = 0;
 	while (i < player.inventory.length) {
 		
@@ -409,16 +461,18 @@ function dropItem(item) {
 	//that is already in the current room.  consider replacing if(item == undefined) above?
 }
 
-//delete this function (or rewrite?)
-function checkContains(location, query){
-	var i = 0;
-	while (i < location.length) {
-		if (location[i].name == query) {
-			return true;
+function destroyItem(item) {
+		var i = 0;
+	while (i < player.inventory.length) {
+		
+		if (player.inventory[i].name == item) {
+			//remove from inv
+			player.inventory.splice(i, 1);
+			return "Dropped " + item + ".";
 		}
+		i++;
 	}
-	return false;
-};
+}
 
 //use to create a vertical list (like in inventory)
 function vertList(array) {

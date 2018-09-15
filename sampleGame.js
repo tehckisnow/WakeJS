@@ -3,7 +3,7 @@ var map = {
 	//name: title of game (include author optionally?)
 	name: "Wake",
 	//description: opening text for the game
-	description: "You slowly regain consciousness to find yourself on a cold, hard, stone floor. Perhaps you should <b>examine the room</b> to find out more about where you are?",
+	description: "You slowly regain consciousness to find yourself on a cold, hard, stone floor.",
 	player: {
 		name: "player",
 		description: "lookin' good!",
@@ -44,7 +44,7 @@ var map = {
 		
 		{ //Room 2
 			name: "Stone room", 
-			briefDesc: "This stone room contains a large stone fountain. There is a light coming from the south.",
+			briefDesc: "This is a stone room that contains a fountain. There is a light coming from the south.",
 			description: "The large bricks of this room are a cold, rough stone. A large decorative water fountain emits the sound of running water. A warm light is coming from the south.",
 			exits: [
 				{
@@ -65,8 +65,8 @@ var map = {
 		
 		{ //Room 3
 			name: "Well-lit room",
-			briefDesc: "This stone room is lit by torches on each of the four walls. A matching set of doors to the east and west adorn opposite walls.",
-			description: "The torches in this room burn brightly, providing you with a detailed view of the ornate carvings decorating the masonry. A matching set of doors to the east and west adorn opposite walls.",
+			briefDesc: "This stone room is lit by torches on each of the four walls.",
+			description: "The torches in this room burn brightly, providing you with a detailed view of the ornate carvings decorating the masonry.",
 			exits: [
 				{
 				name: "north",
@@ -94,19 +94,14 @@ var map = {
 		{//Room 4
 			name: "Secret room",
 			briefDesc: "This small stone room warrants closer examination.",
-			description: "The sole contents of this room is a small piece of paper laying on the floor.",
+			description: "Congratulations, you've found the secret room! Nothing else to see here for now.",
 			exits: [
 				{
 				name: "west",
 				destination: 3
 				}
 				],
-				items: [
-				{
-				name: "note",
-				description: "A small note scrawled on a scrap of torn paper.",
-				read: "Congratulations! You've found the secret room! Nothing else to see here for now."
-				}]
+				items: []
 		}, 
 		
 		{//Room 5
