@@ -4,18 +4,21 @@ A text-based adventure game engine in Javascript written for practice.
 I have built a simple browser terminal emulator for displaying a text-based game in the browser. Text is outputted to an HTML paragraph element which is followed by an input element that takes user's text, changes game states and calculates a response, then appends it to the previous HTML paragraph element.  (This may likely cause problems when this element becomes too large, so consider changing output to instead add additional text elements, or remove the oldest lines from the text element)
 
 So far a player can move around with commands like "n" or "north", and can review the room description with the "look" or "l" command.
+Player can also look at, pick up, and drop items.  Exits can be locked and require a key to unlock before exiting.
 <p>
 Todo:<br />
+-return error if no gamefile found
+-list function for determining grammar (commas and spaces, oxford comma and)
 -use 
 	use machine checks the machine and searches for reasonable verbs (flip, use, activate, throw, turn)
+-interactables (considering calling these machines; they are items with states and/or behaviors, e.g. lightswitch.)<br />
 -adjective property would allow multiple objects(silver key, bronze key). tokenize would also check adjective parameter for valid keywords<br />
 -typos with get (like "get cion") return the room description as if target was not there.
 -get ALL command<br />
+-build enclosures for global variables<br />
 -up arrow command history<br />
 -make more object-oriented? (would reduce repeated code and allow for default settings)<br />
 -ensure font is displaying correctly on other machines(works locally, but not when hosted)
--import/export map data to a json file to separate game data, manage saving, and swap games.<br />
--interactables (considering calling these machines; they are items with states and/or behaviors, e.g. lightswitch.)<br />
 -review formatting of room info output<br />
 -simplify code (a lot of unnecessary abstraction.  consolidate similar functions or break up into smaller?)<br />
 -save<br />
@@ -26,9 +29,6 @@ Todo:<br />
 -organize items in their own global array and sort by itemID? (likely make sorting, finding, and managing inventory easier, may make map less readable)<br />
 -command checker checks all exit names in map? (would help for doors)(that's probably unecessary, maybe stratify exits to a master list, like with items)<br />
 -seperate responces ("There doesn't seem to be an exit there.") into a master response list so they can be customized for a given game
--remove jQuery dependance<br />
--move instructions(?) and player object to map file(so they can vary depending on game)<br />
- OR leave current as default, add check for game-specific instructions at game start, replace default if found!<br />
 -improve onResize
 -look east? (probably not)
 -upon entering a room, check it's visited property and set to true if undefined.  use description for the first time entering a room and briefDesc for each time after<br />
@@ -43,6 +43,7 @@ Todo:<br />
 Commands so far:<br />
 l<br />
 look<br />
+examine<br />
 n<br />
 north<br />
 s<br />
@@ -84,6 +85,11 @@ sep 14th, 2018
 -help mentions 'list' command.
 -added check for obtainable so player cannot pick up things like waterfountains or elephants!
 -removed jQuery dependancies
+
+-added examine (works like look)
+-checks for initial player parameters in gamefile at startup and uses defaults if not found.
+-checks for custom instructions in gamefile
+-drop all (began work on get all)
 
 sep 13, 2018
 -tokenize() will now accept numbers.  this allows tp command to work.

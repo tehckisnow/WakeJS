@@ -8,31 +8,28 @@ function pressEnter(event) {
 window.onload = function() {
 	var ins = document.getElementById("instructions");
 	ins.onclick = function() {
-		out(instructions());
+		out(instructions);
 		return false;
 	}
 };
 
 var debugMode = false;
 var helpCounter = 0;
-
-function instructions() {
-	return "<br \ >This is a text-based adventure game, also known to some as <b>Interactive Fiction</b>.  \
+var instructions = "<br \ >This is a text-based adventure game, also known to some as <b>Interactive Fiction</b>.  \
 	After reading the prompt, you type your responces into the field below.  It will not understand all sentances \
 	or phrases, but it works best with sentences in the form of 'verb noun', such as 'look room' or \
 	'get cup'.  You can navigate without a verb by typing the directions you wish to go, such as 'north', 'south', \
 	'east', and 'west'.  You can also use the shortcuts, 'n', 's', 'e', and 'w', for each of the cardinal directions \
 	respectively.  \
 	<br \>'list' will display a list of all basic commands. <br \>You can view these instructions again by typing 'help'.";
-	window.scrollBy(0, 200);
-}
-
+	
+//default starting values for player if none are found in gamefile:
 var player = {
 	name: "player",
-	description: "lookin' good!",
+	description: "you look as you normally do.",
 	currentRoom: 1,
-	inventory: [{name: "corn", description: "a piece of corn"}, {name: "beef", description: "a piece of beef"}]
-};
+	inventory: []
+	};
 
 //to be implemented later;
 function reset() {
@@ -126,7 +123,6 @@ function query(iterable, propertyX, valueOfX, propertyY) {
 	}
 };
 
-//experimental
 function checkGo(exitName) {
 	if (query(thisRoom.exits, "name", exitName, "name")) {
 		var locked = query(thisRoom.exits, "name", exitName, "locked");
@@ -145,7 +141,7 @@ function checkGo(exitName) {
 
 //split user input into an array and save only recognized commands into array
 function tokenize(originalInput) {
-	var commandsList = ["help", "l", "look", "n", "north", "s", "south", "e", "east", "w", "west", "inventory", "inv", "i", "g", "get", "take", "d", "drop", "test", "reset", "debug", "tp", "me", "self", "room", "unlock", "list"];
+	var commandsList = ["help", "l", "look", "examine", "n", "north", "s", "south", "e", "east", "w", "west", "inventory", "inv", "i", "g", "get", "take", "d", "drop", "test", "reset", "debug", "tp", "me", "self", "room", "unlock", "list", "all"];
 	//split into array
 	var tokenizedInput = originalInput.split(" ");
 	//loop through array and only save recognized commands to finalizedCommand[finalCommandIndex]
@@ -221,13 +217,14 @@ function command(input) {
 	//for now, this checks for main command in tokens[0]; later convert to check if contains
 	switch(tokens[0]) {
 		case "help":
-			return instructions();
+			return instructions;
 			break;
 		case "list":
 			return list();
 			break;
 		case "l":
 		case "look":
+		case "examine":
 			return look(tokens[1]);
 			break;
 		case "n":
@@ -346,6 +343,23 @@ function getItem(item) {
 	if (item == undefined) {
 		return "Get what?";
 	}
+	
+	if (item == "all") {
+		var got = "";
+		var i = 0;
+		while (i < thisRoom.items.length) {
+			//check if obtainable
+			/*
+			if (thisRoom.items[i].obtainable == false) {
+				i++;
+				continue;
+			}*/
+			//got += thisRoom.items[i][name] + " ";
+			getItem(thisRoom.items[i][name]);
+			}
+		return "got " + got;
+	}
+	
 	//if item is in current room
 	var i = 0;
 	while (i < thisRoom.items.length) {
@@ -370,6 +384,12 @@ function getItem(item) {
 function dropItem(item) {
 	if (item == undefined) {
 		return "Drop what?";
+	}
+	if (item == "all") {
+		while (player.inventory.length > 0) {
+			dropItem(player.inventory[0].name);
+		}
+		return "dropped everything.";
 	}
 	//if item is in inventory
 	var i = 0;
@@ -419,6 +439,14 @@ function checkScreen() {
 
 function start() {
 	var screenWidth = screen.width;
+	//check for custom player data
+	if (map.player !== undefined) {
+		player = map.player;
+	}
+	//check for custom instructions
+	if (map.instructions !== undefined) {
+		instructions = map.instructions;
+	}
 	document.getElementById("title").innerHTML = "\"" + map.name + "\"<br \><br \>";
 	out(map.description + "<br \>");
 	out(updateRoomInfo());

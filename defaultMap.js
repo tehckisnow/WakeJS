@@ -4,6 +4,15 @@ var map = {
 	name: "Default Game",
 	//description: opening text for the game
 	description: "This is the opening text",
+	player: {
+		name: "player",
+		description: "lookin' good!",
+		currentRoom: 1,
+		inventory: [
+		{name: "corn", description: "a piece of corn"}, 
+		{name: "beef", description: "a piece of beef"}]
+	},
+	
 	room: [
 		{ //Room 0
 			name: "default room",
